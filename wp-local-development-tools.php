@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name:         WP Local Development Tools
- * Description:         Bunch of tools that usefull for WP with stage mode
+ * Description:         Bunch of tools that useful for WP with stage mode
  * Version:             0.0.1
- * Author:              Mohammad Zarei
- * Author URI:          https://zareidev.ir
+ * Author:              Mohammad Afzali
+ * Author URI:          https://afzaliwp.com
  * License:             GPL v3
  */
 
