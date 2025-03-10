@@ -1,0 +1,23 @@
+	private function cart_contains_only_virtual_downloadable() {
+		if ( is_null( WC()->cart ) || WC()->cart->is_empty() ) {
+			return false;
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$product = $cart_item[ 'data' ];
+			if ( ! $product->is_virtual() && ! $product->is_downloadable() ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public function handle_virtual_order( $order_id, $posted_data, $order ) {
+		// Automatically complete virtual orders
+		if ( $order->has_downloadable_item() ) {
+			$order->update_status( 'completed' );
+		}
+	}
+
+------------------------------------------------------------------------
