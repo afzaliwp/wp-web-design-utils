@@ -1,0 +1,4 @@
+/* To add bevel effect to a container */
+.bevel {
+    clip-path: polygon(var(--s) 0%, calc(100% - var(--s)) 0%, 100% var(--s), 100% calc(100% - var(--s)), calc(100% - var(--s)) 100%, var(--s) 100%, 0% calc(100% - var(--s)), 0% var(--s));
+}
