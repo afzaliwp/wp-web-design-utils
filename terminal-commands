@@ -1,0 +1,5 @@
+//fix svg file for icon font
+for file in *.svg; do   inkscape --actions="select-all; object-stroke-to-path; export-filename=$file; export-do" "$file"; done
+
+//create a WordPress block creator plugin
+npx @wordpress/create-block@latest todo-list
