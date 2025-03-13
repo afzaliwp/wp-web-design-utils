@@ -10,6 +10,6 @@
 	</svg>
 ```
 - the coordinates are converted to 0 - 1 range
-- using clipPathUnits="objectBoundingBox"
-- using <defs>
-- using <clipPath id="a-sample-id" clipPathUnits="objectBoundingBox">
+- using `clipPathUnits="objectBoundingBox"`
+- using `<defs>`
+- using `<clipPath id="a-sample-id" clipPathUnits="objectBoundingBox">`
