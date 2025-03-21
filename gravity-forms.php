@@ -4,7 +4,7 @@
 
 <?php
 
-namespace AfzaliWP\Kharazmi\Includes;
+namespace AfzaliWP\Includes;
 
 defined( 'ABSPATH' ) || exit;
 
