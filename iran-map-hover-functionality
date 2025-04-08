@@ -1,0 +1,53 @@
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if(document.body.classList.contains('elementor-editor-active')) {
+        return;
+    }
+
+    const branchesWrapper = document.getElementById('branches-wrapper');
+
+    // Function to show branches-wrapper and move with cursor
+    document.querySelectorAll('#iran-map path.province').forEach((path) => {
+        path.addEventListener('mousemove', (event) => {
+            branchesWrapper.style.display = 'block';
+            branchesWrapper.style.position = 'fixed';
+            branchesWrapper.style.left = `${event.clientX - 50}px`; // Adjust position slightly right of the cursor
+            branchesWrapper.style.top = `${event.clientY + 10}px`; // Adjust position slightly below the cursor
+            
+            document.querySelectorAll('#iran-map path.province').forEach((allPath) => {
+                allPath.setAttribute('fill', '#dfe8f2');
+            });
+
+            const allBranches = branchesWrapper.querySelectorAll(`div[data-element_type="container"]`);
+            const branches = branchesWrapper.querySelectorAll(`.${path.id}`);
+            
+            path.setAttribute('fill', '#1d8585');
+            allBranches.forEach((branch) => {
+                branch.style.display = 'none';
+            });
+            
+            if (branches.length) {
+                branches.forEach((branch) => {
+                    branch.style.display = 'flex';
+                });
+            }
+        });
+
+        path.addEventListener('mouseleave', () => {
+            branchesWrapper.style.display = 'none';
+        });
+    });
+
+    // Hide branches-wrapper when not hovering over the map
+    document.getElementById('iran-map').addEventListener('mouseleave', () => {
+        branchesWrapper.style.display = 'none';
+    });
+
+    // Hide branches-wrapper on scroll for mobile devices (767px or less)
+    if (window.innerWidth <= 767) {
+        window.addEventListener('scroll', () => {
+            branchesWrapper.style.display = 'none';
+        });
+    }
+});
+</script>
