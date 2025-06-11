@@ -17,9 +17,6 @@ for file in *.png; do
     cwebp -q 90 "$file" -o "${file%.png}.webp"
 done
 
-## Resize by percentage
-cwebp -q 90 -resize 50% 0 a.png -o output_file.webp
-
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## Upgrade Chrome browser on Ubuntu
