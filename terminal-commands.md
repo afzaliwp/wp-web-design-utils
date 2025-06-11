@@ -1,9 +1,13 @@
 ## fix svg file for icon font
 for file in *.svg; do   inkscape --actions="select-all; object-stroke-to-path; export-filename=$file; export-do" "$file"; done
+
 ---------------------------------------------------------------------------------------------------------------------------------
+
 ## create a WordPress block creator plugin
 npx @wordpress/create-block@latest todo-list
+
 ---------------------------------------------------------------------------------------------------------------------------------
+
 ## Convert Images to webp in terminal
 sudo apt install webp
 cwebp -q 90 a.png -o output_file.webp  //for single file conversion
@@ -15,11 +19,14 @@ done
 
 ## Resize by percentage
 cwebp -q 90 -resize 50% 0 a.png -o output_file.webp
+
 ---------------------------------------------------------------------------------------------------------------------------------
+
 ## Upgrade Chrome browser on Ubuntu
 sudo apt --only-upgrade install google-chrome-stable
 
 ---------------------------------------------------------------------------------------------------------------------------------
+
 ## convert to webp custom terminal command
 1. Add this to your ~/.bashrc or ~/.zshrc file
 2. source ~/.bashrc  # or source ~/.zshrc
