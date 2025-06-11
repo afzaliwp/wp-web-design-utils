@@ -1,4 +1,5 @@
-//sample of working clip path svg
+## sample of working clip path svg
+
 ```
 	<svg>
 		<defs>
@@ -13,3 +14,12 @@
 - using `clipPathUnits="objectBoundingBox"`
 - using `<defs>`
 - using `<clipPath id="a-sample-id" clipPathUnits="objectBoundingBox">`
+
+## Make svg able to stretch and deform
+preserveAspectRatio="none" attribute
+.bg-element {
+  background-image: url('path/to/your.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
