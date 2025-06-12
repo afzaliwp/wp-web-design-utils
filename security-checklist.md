@@ -7,18 +7,18 @@ If you see a JavaScript alert, your page is vulnerable.
 Vulnerable Example:
 
 ```php
-<h1>Search Results: <?```php echo $wp_query->query_vars['s']; ?></h1>
+<h1>Search Results: <?php echo $wp_query->query_vars['s']; ?></h1>
 ```
 Fix: Replace with proper escaping:
 
 ```php
-<h1>Search Results: <?```php echo esc_html( $wp_query->query_vars['s'] ); ?></h1>
+<h1>Search Results: <?php echo esc_html( $wp_query->query_vars['s'] ); ?></h1>
 ```
 Or even better, use WordPress’s built-in function:
 
 
 ```php
-<h1>Search Results: <?```php echo get_search_query(); ?></h1>
+<h1>Search Results: <?php echo get_search_query(); ?></h1>
 ```
 
 ## 2. Comment Forms and Comment Display (Stored XSS)
