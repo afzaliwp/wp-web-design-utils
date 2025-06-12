@@ -26,7 +26,7 @@ sudo apt --only-upgrade install google-chrome-stable
 
 ## convert to webp custom terminal command
 1. Add this to your ~/.bashrc or ~/.zshrc file
-2. source ~/.bashrc  # or source ~/.zshrc
+2. `source ~/.bashrc  # or source ~/.zshrc`
 
 ```
 ma90-to-webp() {
