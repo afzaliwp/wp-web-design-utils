@@ -1,2 +1,0 @@
---replace a string with another on posts table
-UPDATE wp_posts SET post_content = REPLACE (post_content, 'localhost/test/', 'www.yourlivesite.com/');
