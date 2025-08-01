@@ -13,6 +13,7 @@
 ------------------------------------------------------------------------
 ## Check to see if cart only contains the downloadble products and virtual
 
+```
 private function cart_contains_only_virtual_downloadable() {
 		if ( is_null( WC()->cart ) || WC()->cart->is_empty() ) {
 			return false;
@@ -34,5 +35,5 @@ private function cart_contains_only_virtual_downloadable() {
 			$order->update_status( 'completed' );
 		}
 	}
-
+```
 ------------------------------------------------------------------------
