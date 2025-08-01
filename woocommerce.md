@@ -1,3 +1,25 @@
+## WooCommerce Melipayamak sms patterns:
+### Admin:
+```
+@309405@{order_id};{price}##shared
+```
+```
+سلام مدیر
+سفارش {order_id} ثبت شده است و هم اکنون در وضعیت در حال انجام می‌باشد.
+مبلغ سفارش : {price}
+```
+### Customer:
+```
+@309409@{b_first_name};{order_id};{price};{transaction_id}##shared 
+```
+```
+سلام {b_first_name}
+سفارش {order_id} دریافت شد و هم اکنون در وضعیت در انتظار بررسی می‌باشد.
+مبلغ سفارش : {price}
+شماره تراکنش : {transaction_id}
+آدرس سایت در اینجا
+```
+
 ## Tehran Postal Code range for woocommerce shipping
 ```
 1111111111...1199999999
