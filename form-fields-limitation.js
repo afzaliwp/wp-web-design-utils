@@ -1,4 +1,4 @@
-    /**
+/**
      * Merge multiple arrays and return only unique elements.
      * @param  {...Array<HTMLElement>} arrays 
      * @returns {Array<HTMLElement>}
@@ -69,47 +69,108 @@
     };
 
     /**
- * Applies email validation on input fields.
- *
- * It identifies fields based on:
- *   - Custom CSS selectors (passed in the config).
- *   - Input elements of type="email".
- *   - Inputs with associated labels containing keywords like "email", "ایمیل", or "آدرس ایمیل".
- *
- * Non-allowed characters are removed as the user types.
- * Additionally, if a `charLimit` is provided, the email input is truncated to the specified maximum length.
- *
- * @param {object} config
- * @param {string[]} [config.selectors=[]] - Custom selectors for email fields.
- * @param {RegExp} [config.allowedRegex=/[^A-Za-z0-9@._+\-]/g] - Characters to filter out.
- * @param {string[]} [config.labelKeywords=["email", "ایمیل", "آدرس ایمیل"]] - Label keywords.
- * @param {number} [config.charLimit] - Optional character limit applied to the email input.
- */
-function applyEmailValidation({
-  selectors = [],
-  allowedRegex = /[^A-Za-z0-9@._+\-]/g,
-  labelKeywords = ["email", "ایمیل", "آدرس ایمیل"],
-  charLimit = 50
-} = {}) {
-  const selectorElements = getElementsBySelectors(selectors);
-  const typeEmailElements = Array.from(document.querySelectorAll('input[type="email"]'));
-  const labelElements = getElementsByLabelKeywords(labelKeywords);
+     * Applies email validation on input fields.
+     *
+     * It identifies fields based on:
+     *   - Custom CSS selectors (passed in the config).
+     *   - Input elements of type="email".
+     *   - Inputs with associated labels containing keywords like "email", "ایمیل", or "آدرس ایمیل".
+     *
+     * Non-allowed characters are removed as the user types.
+     * Additionally, if a `charLimit` is provided, the email input is truncated to the specified maximum length.
+     *
+     * @param {object} config
+     * @param {string[]} [config.selectors=[]] - Custom selectors for email fields.
+     * @param {RegExp} [config.allowedRegex=/[^A-Za-z0-9@._+\-]/g] - Characters to filter out.
+     * @param {string[]} [config.labelKeywords=["email", "ایمیل", "آدرس ایمیل"]] - Label keywords.
+     * @param {number} [config.charLimit] - Optional character limit applied to the email input.
+     */
+    function applyEmailValidation({
+      selectors = [],
+      allowedRegex = /[^A-Za-z0-9@._+\-]/g,
+      labelKeywords = ["email", "ایمیل", "آدرس ایمیل"],
+      charLimit = 50
+    } = {}) {
+      const selectorElements = getElementsBySelectors(selectors);
+      const typeEmailElements = Array.from(document.querySelectorAll('input[type="email"]'));
+      const labelElements = getElementsByLabelKeywords(labelKeywords);
 
-  const emailFields = mergeUnique(selectorElements, typeEmailElements, labelElements);
+      const emailFields = mergeUnique(selectorElements, typeEmailElements, labelElements);
 
-  emailFields.forEach(field => {
-    field.addEventListener("input", () => {
-      let filteredValue = field.value.replace(allowedRegex, "");
-      if (typeof charLimit === "number" && filteredValue.length > charLimit) {
-        filteredValue = filteredValue.slice(0, charLimit);
-      }
-      if (field.value !== filteredValue) {
-        field.value = filteredValue;
-      }
-    });
-  });
-}
+      emailFields.forEach(field => {
+        field.addEventListener("input", () => {
+          let filteredValue = field.value.replace(allowedRegex, "");
+          if (typeof charLimit === "number" && filteredValue.length > charLimit) {
+            filteredValue = filteredValue.slice(0, charLimit);
+          }
+          if (field.value !== filteredValue) {
+            field.value = filteredValue;
+          }
+        });
+      });
+    }
 
+    /**
+     * Applies URL/website validation on input fields.
+     *
+     * It identifies fields based on:
+     *   - Custom CSS selectors (passed in the config).
+     *   - Input elements of type="url".
+     *   - Inputs with associated labels containing keywords like "website", "url", "وب سایت", "آدرس وب".
+     *
+     * Non-allowed characters are removed as the user types and basic URL formatting is enforced.
+     *
+     * @param {object} config
+     * @param {string[]} [config.selectors=[]] - Custom selectors for URL fields.
+     * @param {RegExp} [config.allowedRegex=/[^A-Za-z0-9@._+\-:/?#[\]%&=]/g] - Characters to filter out.
+     * @param {string[]} [config.labelKeywords=["website", "url", "وب سایت", "آدرس وب", "سایت"]] - Label keywords.
+     * @param {number} [config.charLimit=200] - Optional character limit applied to the URL input.
+     * @param {boolean} [config.autoPrefix=true] - Automatically add http:// if no protocol is present.
+     */
+    function applyUrlValidation({
+      selectors = [],
+      allowedRegex = /[^A-Za-z0-9@._+\-:/?#[\]%&=]/g,
+      labelKeywords = ["website", "url", "وب سایت", "آدرس وب", "سایت"],
+      charLimit = 200,
+      autoPrefix = true
+    } = {}) {
+      const selectorElements = getElementsBySelectors(selectors);
+      const typeUrlElements = Array.from(document.querySelectorAll('input[type="url"]'));
+      const labelElements = getElementsByLabelKeywords(labelKeywords);
+
+      const urlFields = mergeUnique(selectorElements, typeUrlElements, labelElements);
+
+      urlFields.forEach(field => {
+        field.addEventListener("input", () => {
+          let filteredValue = field.value.replace(allowedRegex, "");
+          
+          // Convert Persian digits
+          filteredValue = convertPersianDigits(filteredValue);
+          
+          // Apply character limit
+          if (typeof charLimit === "number" && filteredValue.length > charLimit) {
+            filteredValue = filteredValue.slice(0, charLimit);
+          }
+
+          if (field.value !== filteredValue) {
+            field.value = filteredValue;
+          }
+        });
+
+        // Add blur event to handle auto-prefixing
+        if (autoPrefix) {
+          field.addEventListener("blur", () => {
+            let value = field.value.trim();
+            if (value && !value.match(/^https?:\/\//i)) {
+              // Only add prefix if it looks like a domain (contains at least one dot)
+              if (value.includes('.') && !value.includes(' ')) {
+                field.value = 'http://' + value;
+              }
+            }
+          });
+        }
+      });
+    }
 
     /**
      * Limits the number of characters in the specified input fields.
@@ -172,15 +233,64 @@ function applyEmailValidation({
     // Expose the utility functions globally for easy access.
     window.inputUtils = {
       applyEmailValidation,
+      applyUrlValidation,
       applyCharLimit,
       applyTelValidation
     };
 
-    // Initialize once the DOM is fully loaded.
-    document.addEventListener("DOMContentLoaded", () => {
-	    inputUtils.applyEmailValidation();
-	    inputUtils.applyCharLimit({ selectors: ['#input_1_1', '#input_1_3'], limit: 20 });
-	    inputUtils.applyCharLimit({ selectors: ['#input_1_5'], limit: 100 });
-	    inputUtils.applyTelValidation({ selectors: ['#input_1_4'], digitLimit: 11 });
-    });
+    /**
+     * Initialize all validations - can be called multiple times safely
+     */
+    function initializeValidations() {
+      inputUtils.applyEmailValidation();
+      inputUtils.applyUrlValidation();
+      inputUtils.applyCharLimit({ selectors: ['#input_1_1', '#input_1_3'], limit: 20 });
+      inputUtils.applyCharLimit({ selectors: ['#input_1_5'], limit: 100 });
+      inputUtils.applyTelValidation({ selectors: ['#input_1_4'], digitLimit: 11 });
+    }
 
+    // Initialize once the DOM is fully loaded.
+    document.addEventListener("DOMContentLoaded", initializeValidations);
+
+    // Handle Elementor popups and off-canvas (if using Elementor Pro)
+    document.addEventListener("elementor/popup/show", initializeValidations);
+
+    // Handle dynamic content changes with MutationObserver
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver((mutations) => {
+        let shouldReinitialize = false;
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            // Check if any added nodes contain forms or inputs
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const hasForm = node.querySelector && (
+                  node.querySelector('form') || 
+                  node.querySelector('input') ||
+                  node.tagName === 'FORM' ||
+                  node.tagName === 'INPUT'
+                );
+                if (hasForm) {
+                  shouldReinitialize = true;
+                }
+              }
+            });
+          }
+        });
+        
+        if (shouldReinitialize) {
+          // Debounce reinitializations
+          clearTimeout(window.validationTimeout);
+          window.validationTimeout = setTimeout(initializeValidations, 100);
+        }
+      });
+
+      // Start observing
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    // Expose initialization function globally
+    window.inputUtils.reinitialize = initializeValidations;
