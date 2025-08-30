@@ -66,7 +66,27 @@
         },
 
         onCloseButtonClick(event) {
-            const isCloseButton = event.target.matches(`
+            const target = event.target;
+            const link = target.closest('a') || (target.tagName === 'A' ? target : null);
+            
+            // Check for Elementor action links (both encoded and decoded)
+            if (link && link.href) {
+                const href = link.href;
+                const decodedHref = decodeURIComponent(href);
+                
+                const isElementorClose = href.includes('#elementor-action%3Aaction%3Doff_canvas%3Aclose') ||
+                                       href.includes('#elementor-action%3Aaction%3Dpopup%3Aclose') ||
+                                       decodedHref.includes('#elementor-action:action=off_canvas:close') ||
+                                       decodedHref.includes('#elementor-action:action=popup:close');
+                
+                if (isElementorClose) {
+                    setTimeout(() => VideoManager.pauseAll(), 50);
+                    return;
+                }
+            }
+
+            // Check for other close button classes
+            const isCloseButton = target.matches(`
                 .elementor-menu-toggle[aria-expanded="true"],
                 .eicon-close,
                 .elementor-button-link,
@@ -102,6 +122,14 @@
                 jQuery(document).on('elementor/popup/hide elementor/popup/show', 
                     EventHandlers.onElementorPopupHide
                 );
+                
+                // Additional Elementor frontend events
+                if (typeof elementorFrontend !== 'undefined') {
+                    elementorFrontend.hooks.addAction('frontend/element_ready/global', () => {
+                        // Re-setup after Elementor elements are ready
+                        setTimeout(() => VideoManager.pauseAll(), 100);
+                    });
+                }
             }
         },
 
