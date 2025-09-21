@@ -224,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const telFields = mergeUnique(selectorElements, typeTelElements, labelElements);
 
-
     telFields.forEach(field => {
       field.addEventListener("input", (e) => {
         let newValue = convertPersianDigits(field.value);
@@ -240,12 +239,297 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /**
+   * Applies mobile number assistance and validation:
+   *   - Identifies mobile fields via custom selectors or label text that matches mobile-related keywords.
+   *   - Auto-prefixes with "09" when the field is clicked and empty.
+   *   - Converts Persian digits to English.
+   *   - Removes non-digit characters.
+   *   - Enforces exactly 11 digits (Iranian mobile number format).
+   *
+   * @param {object} config
+   * @param {string[]} [config.selectors=[]] - CSS selectors for mobile inputs.
+   * @param {string[]} [config.labelKeywords=["شماره موبایل", "موبایل", "mobile number", "mobile"]] - Label keywords.
+   * @param {string} [config.prefix="09"] - Prefix to auto-add when field is clicked and empty.
+   * @param {number} [config.exactDigits=11] - Exact number of digits required.
+   */
+  function applyMobileValidation({
+    selectors = [],
+    labelKeywords = ["شماره موبایل", "موبایل", "mobile number", "mobile"],
+    prefix = "09",
+    exactDigits = 11
+  } = {}) {
+    const selectorElements = getElementsBySelectors(selectors);
+    const labelElements = getElementsByLabelKeywords(labelKeywords);
+
+    const mobileFields = mergeUnique(selectorElements, labelElements);
+
+    mobileFields.forEach(field => {
+      // Auto-prefix with "09" when field is clicked and empty
+      field.addEventListener("focus", () => {
+        // Disable submit buttons when user focuses on mobile field
+        disableSubmitButtons(field);
+        
+        if (!field.value.trim()) {
+          field.value = prefix;
+        }
+        
+        // Always position cursor at the end (handles both empty and existing values)
+        setTimeout(() => {
+          field.setSelectionRange(field.value.length, field.value.length);
+        }, 0);
+      });
+
+      // Validate input to maintain exactly 11 digits
+      field.addEventListener("input", () => {
+        let newValue = convertPersianDigits(field.value);
+        newValue = newValue.replace(/\D/g, "");
+        
+        // Ensure it starts with 09 if user tries to modify the prefix
+        if (newValue.length > 0 && !newValue.startsWith("09")) {
+          // If user typed something that doesn't start with 09, prepend 09
+          if (newValue.length <= exactDigits - 2) {
+            newValue = prefix + newValue;
+          } else {
+            // If too long, keep only the allowed digits starting with 09
+            newValue = prefix + newValue.slice(0, exactDigits - 2);
+          }
+        }
+        
+        // Enforce exactly 11 digits
+        if (newValue.length > exactDigits) {
+          newValue = newValue.slice(0, exactDigits);
+        }
+
+        if (field.value !== newValue) {
+          field.value = newValue;
+        }
+
+        // Real-time validation and submit button control
+        validateMobileFieldRealtime(field, exactDigits);
+      });
+
+      // Prevent deletion of the "09" prefix
+      field.addEventListener("keydown", (e) => {
+        const cursorPosition = field.selectionStart;
+        const value = field.value;
+        
+        // If user tries to delete and cursor is at position 0, 1, or 2, prevent it
+        if ((e.key === "Backspace" || e.key === "Delete") && cursorPosition <= 2 && value.startsWith(prefix)) {
+          e.preventDefault();
+        }
+      });
+
+      // Handle paste events
+      field.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData("text");
+        let cleanData = convertPersianDigits(pasteData).replace(/\D/g, "");
+        
+        // If pasted data doesn't start with 09, add it
+        if (cleanData && !cleanData.startsWith("09")) {
+          cleanData = prefix + cleanData;
+        }
+        
+        // Limit to exact digits
+        if (cleanData.length > exactDigits) {
+          cleanData = cleanData.slice(0, exactDigits);
+        }
+        
+        field.value = cleanData;
+        
+        // Validate after paste
+        validateMobileFieldRealtime(field, exactDigits);
+      });
+
+      // Handle click events to ensure cursor is at the end
+      field.addEventListener("click", () => {
+        // If user clicks anywhere in the field, move cursor to end
+        setTimeout(() => {
+          field.setSelectionRange(field.value.length, field.value.length);
+        }, 0);
+      });
+
+
+    });
+
+    // Store mobile fields for form validation
+    if (!window.mobileFields) {
+      window.mobileFields = [];
+    }
+    window.mobileFields = [...new Set([...window.mobileFields, ...mobileFields])];
+  }
+
+  /**
+   * Finds and disables submit buttons for the form containing the given field
+   * @param {HTMLElement} field - The input field
+   */
+  function disableSubmitButtons(field) {
+    const form = field.closest('form');
+    if (form) {
+      const submitButtons = form.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type])');
+      submitButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.setAttribute('data-mobile-disabled', 'true');
+      });
+    }
+  }
+
+  /**
+   * Enables submit buttons for all forms if all mobile fields are valid
+   */
+  function enableSubmitButtons() {
+    // Find all submit buttons that were disabled by mobile validation
+    const disabledButtons = document.querySelectorAll('[data-mobile-disabled="true"]');
+    disabledButtons.forEach(btn => {
+      btn.disabled = false;
+      btn.removeAttribute('data-mobile-disabled');
+    });
+  }
+
+  /**
+   * Real-time validation that happens during typing
+   * @param {HTMLElement} field - The mobile input field
+   * @param {number} exactDigits - Required number of digits
+   */
+  function validateMobileFieldRealtime(field, exactDigits) {
+    const value = field.value.trim();
+    const isValid = value.length === exactDigits && value.startsWith("09") && /^\d+$/.test(value);
+    
+    // Remove existing error message
+    if (field.nextElementSibling && field.nextElementSibling.classList.contains("mobile-validation-message")) {
+      field.nextElementSibling.remove();
+    }
+    
+    if (!isValid && value.length > 0) {
+      // Add error styling
+      field.classList.add("mobile-validation-error");
+      
+      // Add error message
+      const errorMsg = document.createElement("div");
+      errorMsg.className = "mobile-validation-message";
+      errorMsg.style.cssText = "color: #dc3545; font-size: 12px; margin-top: 4px;";
+      errorMsg.textContent = "شماره موبایل باید دقیقاً ۱۱ رقم و با ۰۹ شروع شود";
+      
+      field.parentNode.insertBefore(errorMsg, field.nextSibling);
+    } else {
+      field.classList.remove("mobile-validation-error");
+    }
+
+    // Check if all mobile fields are valid and enable/disable submit buttons
+    checkAllMobileFieldsAndToggleSubmit();
+  }
+
+  /**
+   * Checks all mobile fields and enables submit buttons if all are valid
+   */
+  function checkAllMobileFieldsAndToggleSubmit() {
+    if (!window.mobileFields || window.mobileFields.length === 0) {
+      enableSubmitButtons();
+      return;
+    }
+
+    let allValid = true;
+    let hasContent = false;
+
+    window.mobileFields.forEach(field => {
+      if (document.contains(field)) {
+        const value = field.value.trim();
+        if (value.length > 0) {
+          hasContent = true;
+          const isValid = value.length === 11 && value.startsWith("09") && /^\d+$/.test(value);
+          if (!isValid) {
+            allValid = false;
+          }
+        }
+      }
+    });
+
+    // Only enable submit if all mobile fields with content are valid
+    if (allValid && hasContent) {
+      enableSubmitButtons();
+    }
+  }
+
+  /**
+   * Validates all mobile fields on the page (for form submission)
+   * @returns {boolean} True if all mobile fields are valid
+   */
+  function validateAllMobileFields() {
+    if (!window.mobileFields || window.mobileFields.length === 0) {
+      return true; // No mobile fields to validate
+    }
+
+    let allValid = true;
+    
+    window.mobileFields.forEach(field => {
+      // Check if field still exists in DOM
+      if (document.contains(field)) {
+        const value = field.value.trim();
+        if (value.length > 0) {
+          const isValid = value.length === 11 && value.startsWith("09") && /^\d+$/.test(value);
+          if (!isValid) {
+            allValid = false;
+            validateMobileFieldRealtime(field, 11); // Show error
+          }
+        }
+      }
+    });
+
+    return allValid;
+  }
+
+  /**
+   * Prevents form submission if mobile validation fails
+   */
+  function setupFormValidation() {
+    // Handle form submissions
+    document.addEventListener("submit", (e) => {
+      if (!validateAllMobileFields()) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Show general error message
+        const firstInvalidField = window.mobileFields.find(field => 
+          document.contains(field) && 
+          field.classList.contains("mobile-validation-error")
+        );
+        
+        if (firstInvalidField) {
+          firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        return false;
+      }
+    });
+
+    // Handle Gravity Forms AJAX submissions (if using Gravity Forms)
+    if (typeof gform !== 'undefined') {
+      document.addEventListener("gform_pre_submission", (e) => {
+        if (!validateAllMobileFields()) {
+          e.preventDefault();
+          return false;
+        }
+      });
+    }
+
+    // Handle Contact Form 7 submissions (if using CF7)
+    document.addEventListener("wpcf7beforesubmit", (e) => {
+      if (!validateAllMobileFields()) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+
   // Expose the utility functions globally for easy access.
   window.inputUtils = {
     applyEmailValidation,
     applyUrlValidation,
     applyCharLimit,
-    applyTelValidation
+    applyTelValidation,
+    applyMobileValidation,
+    validateAllMobileFields
   };
 
   /**
@@ -254,15 +538,34 @@ document.addEventListener('DOMContentLoaded', () => {
   function initializeValidations() {
     inputUtils.applyEmailValidation();
     inputUtils.applyUrlValidation();
+    inputUtils.applyMobileValidation(); // Add mobile validation
     
     // Updated selectors based on your actual form HTML
     inputUtils.applyCharLimit({ selectors: ['#input_4_3'], limit: 50 }); // Name field
     inputUtils.applyCharLimit({ selectors: ['#input_4_1'], limit: 200 }); // Website field
     inputUtils.applyTelValidation({ selectors: ['#input_4_8'], digitLimit: 11 }); // Tel field
+    
+    // Setup form validation
+    setupFormValidation();
   }
 
   // Initialize validations
   initializeValidations();
+
+  // Add CSS for validation styling
+  const style = document.createElement('style');
+  style.textContent = `
+    .mobile-validation-error {
+      border-color: #dc3545 !important;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    .mobile-validation-message {
+      color: #dc3545;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+  `;
+  document.head.appendChild(style);
 
   // Handle Elementor popups and off-canvas (if using Elementor Pro)
   document.addEventListener("elementor/popup/show", initializeValidations);
