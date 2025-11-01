@@ -9,8 +9,8 @@ npx @wordpress/create-block@latest todo-list
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## Convert Images to webp in terminal
-sudo apt install webp
-cwebp -q 90 a.png -o output_file.webp  //for single file conversion
+`sudo apt install webp`
+`cwebp -q 90 a.png -o output_file.webp  //for single file conversion`
 
 //For multiple file conversion (all images in a directory)
 for file in *.png; do
