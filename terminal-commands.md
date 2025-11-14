@@ -35,7 +35,7 @@ sudo apt --only-upgrade install google-chrome-stable
 ma90webp() {
     local extension="png"
     local quality="90"
-    
+    shopt -s nullglob nocaseglob
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -86,6 +86,7 @@ ma90webp() {
     done
     
     echo "Conversion complete!"
+shopt -u nocaseglob
 }
 ```
 
@@ -135,6 +136,7 @@ ma90heic2png
 
 ```
 ma90resize() {
+    shopt -s nullglob nocaseglob
     if [ "$#" -ne 2 ]; then
         echo "Usage: ma90resize <format> <size>"
         echo "  format: png, jpg, jpeg, webp"
@@ -157,6 +159,7 @@ ma90resize() {
             echo "Resized: ${file} -> ${output_dir}/"
         fi
     done
+    shopt -u nocaseglob
 }
 ```
 ### Examples:
