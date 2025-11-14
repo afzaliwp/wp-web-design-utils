@@ -32,7 +32,7 @@ sudo apt --only-upgrade install google-chrome-stable
 2. `source ~/.bashrc  # or source ~/.zshrc`
 
 ```
-ma90-to-webp() {
+ma90webp() {
     local extension="png"
     local quality="90"
     
@@ -92,15 +92,70 @@ ma90-to-webp() {
 ### Examples:
 ```
 # Convert all PNG files with quality 90 (defaults)
-ma90-to-webp
+ma90webp
 
 # Convert all JPG files with quality 85
-ma90-to-webp -e jpg -q 85
+ma90webp -e jpg -q 85
 
 # Convert all JPEG files with quality 75
-ma90-to-webp -e jpeg -q 75
+ma90webp -e jpeg -q 75
 
 # Show help
-ma90-to-webp -h
+ma90webp -h
 ```
+---------------------------------------------------------------------------------------------------------------------------------
 
+## convert HEIC to PNG custom terminal command
+1. `sudo apt install libheif-examples`
+2. Add this to your ~/.bashrc or ~/.zshrc file
+3. `source ~/.bashrc  # or source ~/.zshrc`
+
+```
+alias ma90heic2png='for file in *.heic; do heif-convert "$file" "${file%.heic}.png"; done'
+```
+### Examples:
+```
+# Convert all HEIC files to PNG
+ma90heic2png
+```
+---------------------------------------------------------------------------------------------------------------------------------
+
+## Scale Images custom terminal command
+1. `sudo apt install imagemagick`
+2. Add this to your ~/.bashrc or ~/.zshrc file
+3. `source ~/.bashrc  # or source ~/.zshrc`
+
+```
+ma90resize() {
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: ma90resize <format> <size>"
+        echo "  format: png, jpg, jpeg, webp"
+        echo "  size: 50%, 800x, x600, 800x600"
+        echo "Examples:"
+        echo "  ma90resize png 50%"
+        echo "  ma90resize webp 800x"
+        return 1
+    fi
+    
+    local format="$1"
+    local size="$2"
+    
+    for file in *."$format"; do
+        if [ -f "$file" ]; then
+            convert "$file" -resize "$size" "${file%.*}_resized.$format"
+            echo "Resized: $file"
+        fi
+    done
+}
+```
+### Examples:
+```
+# Resize to 50% of original size:
+ma90resize png 50%
+
+# Resize width to 800px of the original size:
+ma90resize webp 800x
+
+# Resize height to 600px of the original size:
+ma90resize jpg x600
+```
