@@ -111,7 +111,15 @@ ma90webp -h
 3. `source ~/.bashrc  # or source ~/.zshrc`
 
 ```
-alias ma90heic2png='for file in *.heic; do heif-convert "$file" "${file%.heic}.png"; done'
+ma90heic2png() {
+    shopt -s nullglob nocaseglob
+    for file in *.heic; do
+        heif-convert "$file" "${file%.*}.png"
+        echo "Converted: $file"
+    done
+    shopt -u nocaseglob
+}
+
 ```
 ### Examples:
 ```
