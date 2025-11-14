@@ -147,11 +147,14 @@ ma90resize() {
     
     local format="$1"
     local size="$2"
+    local output_dir="resized-${format}"
     
-    for file in *."$format"; do
-        if [ -f "$file" ]; then
-            convert "$file" -resize "$size" "${file%.*}_resized.$format"
-            echo "Resized: $file"
+    mkdir -p "${output_dir}"
+    
+    for file in *."${format}"; do
+        if [ -f "${file}" ]; then
+            convert "${file}" -resize "${size}" "${output_dir}/${file%.*}_resized.${format}"
+            echo "Resized: ${file} -> ${output_dir}/"
         fi
     done
 }
