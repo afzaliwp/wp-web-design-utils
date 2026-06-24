@@ -82,6 +82,10 @@ defined( 'ABSPATH' ) || exit;
 class My_PWSMS_Custom_SMS {
 
 	public function __construct() {
+		if ( ! function_exists( 'PWSMS' ) ) {
+			return;
+		}
+
 		add_filter( 'pwoosms_buyer_settings', [ $this, 'add_buyer_field' ] );
 		add_filter( 'pwoosms_super_admin_settings', [ $this, 'add_admin_field' ] );
 
